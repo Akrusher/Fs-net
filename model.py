@@ -1,14 +1,18 @@
 import tensorflow as tf
 class Fs_net():
-	def __init__(self):
+	def __init__(self, x, y):
 		self.embedding_dim = 128
-		self.hidden_dim = 512
+		self.hidden_dim = 128
 		self.n_neurons = 128
-		self.n_layers = 2
-		self.n_steps = 28
-		self.n_inputs = 28
-		self.n_outputs = 10
-		self.X = tf.placeholder(tf.float32, [None, self.n_steps, self.n_inputs])		
+		self.n_layers = 1
+		self.n_steps = 22
+		self.n_inputs = 128
+		self.n_outputs = 11
+		# self.X = tf.placeholder(tf.float32, [None, self.n_steps, self.n_inputs])
+		# self.Y = tf.placeholder(tf.float32, [None,1])	
+		self.X = x
+		self.Y = y
+		self.alpha = 1	
 
 	def bi_lstm(self):
 	    # 顺时间循环层的记忆细胞，堆叠了两层
@@ -52,11 +56,24 @@ class Fs_net():
 	    return states
 
 	def fs_net(self):
+		#add embedding 
 		encoder_output = self.bi_gru(self.X)
 		encoder_feats = tf.concate([encoder_output[0][-1], encoder_output[1][-1]],axis=-1)
 		decoder_output = self.bi_gru(encoder_feats)
 		decoder_feats = tf.concate([decoder_output[0][-1], decoder_output[1][-1]],axis=-1)
-		feats = tf.concat([encoder_feats, decoder_feats],axis = -1)
-		cls_dense1 = tf.layers.dense(inputs=feats,units= self.n_neurons,activation=tf.nn.relu,kernel_regularizer=tf.contrib.layers.l2_regularizer(0.003))
-		cls_dense2 = tf.layers.dense(inputs=cls_dense1,units=self.n_outputs,activation=tf.nn.relu,kernel_regularizer=tf.contrib.layers.l2_regularizer(0.003))
-		return cls_dense2
+		element_wise_product = encoder_feats * decoder_feats
+		element_wise_absolute = tf.abs(encoder_feats,decoder_feats)
+		cls_feats = tf.concat([encoder_feats, decoder_feats, element_wise_product, element_wise_absolute],axis = -1)
+		cls_dense_1 = tf.layers.dense(inputs=cls_feats,units= self.n_neurons,activation=tf.nn.selu,kernel_regularizer=tf.contrib.layers.l2_regularizer(0.003))
+		cls_dense_2 = tf.layers.dense(inputs=cls_dense1,units=self.n_outputs,activation=tf.nn.relu,kernel_regularizer=tf.contrib.layers.l2_regularizer(0.003),name="softmax") 
+		return cls_dense2, decoder_output
+
+	def build_loss(self):
+		logits, ae_outputs = self.fs_net()
+		cls_entropy = tf.nn.sparse_softmax_cross_entrop_with_logits(labers=y, logits=logits)
+		cls_loss = tf.redice_mean(cls_entropy, name="cls_loss")
+		ae_loss = 0
+		total_loss = cls_loss + self.alpha * ae_loss
+		return total_loss
+
+
