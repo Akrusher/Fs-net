@@ -95,7 +95,7 @@ class Fs_net():
 		cls_loss = tf.reduce_mean(cls_entropy, name="cls_loss")
 		ae_loss = 0
 		total_loss = cls_loss + self.alpha * ae_loss
-		return total_loss
+		return total_loss, logits
 
 	def build_fs_net_loss(self):
 		logits, ae_outputs = self.fs_net()

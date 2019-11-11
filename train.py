@@ -12,16 +12,18 @@ train_data = dataset.train()
 #test_data = dataset.test()
 
 fs_net = Fs_net(X, Y)
-loss = fs_net.build_loss()
+loss, logits = fs_net.build_loss()
+
 
 lr = 1e-3
 optimizer  = tf.train.AdamOptimizer(learning_rate=lr)
 train_op = optimizer.minimize(loss)
 
-# corret =                          
-# accuracy = tf.reduce_mean(tf.cast(corret, tf.float32))
+
+correct =  tf.nn.in_top_k(logits,Y,1)                        
+accuracy = tf.reduce_mean(tf.cast(corret, tf.float32))
 tf.summary.scalar("loss",loss)                                                        
-#tf.summary.scalar("accuracy",accuracy)
+tf.summary.scalar("accuracy",accuracy)
 summary = tf.summary.merge_all()
 
 init_op = tf.global_variables_initializer()
@@ -40,9 +42,9 @@ with tf.Session() as sess:
 	for epoch in range(n_epoch):
 		for batch in range(batch_num):
 			X_batch, y_batch = train_data.next_batch(batch_size)
-			sess.run([train_op,loss],feed_dict={X:X_batch, Y:y_batch})
-			summary_ = sess.run(summary)
+			_,_,summary_,accuracy_ = sess.run([train_op,loss,summary,accuracy],feed_dict={X:X_batch, Y:y_batch})
 			train_writer.add_summary(summary_,cnt)
+			print("step: %s accuracy: %s".format(cnt,accuracy_))
 			cnt += 1
 		if epoch % 5 == 0:
 			saver.save(sess,model_dir+"model_{}.ckpt".format(epoch))
