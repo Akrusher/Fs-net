@@ -30,10 +30,10 @@ summary = tf.summary.merge_all()
 init_op = tf.global_variables_initializer()
 saver = tf.train.Saver(max_to_keep=5)
 
-n_epoch = 50
+n_epoch = 150
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 batch_num = train_data.num_examples // batch_size
-training_steps_per_epoch = batch_size * 100
+training_steps_per_epoch = 100
 model_dir = "./summary"
 cnt = 0
 
@@ -47,7 +47,7 @@ with tf.Session() as sess:
 			_,_,summary_ = sess.run([train_op,loss,summary],feed_dict={X:X_batch, Y:y_batch})
 			train_writer.add_summary(summary_,cnt)
 			cnt += 1
-		if cnt % training_steps_per_epoch == 100:
+		if cnt % training_steps_per_epoch == 0:
 			steps_per_epoch = test_data.num_examples // batch_size
 			correct_cnt = 0
 			num_test_examples = steps_per_epoch * batch_size
