@@ -31,10 +31,9 @@ init_op = tf.global_variables_initializer()
 saver = tf.train.Saver(max_to_keep=5)
 
 n_epoch = 150
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 batch_num = train_data.num_examples // batch_size
 training_steps_per_epoch = 100
-model_dir = "./summary"
+model_dir = "./summary/"
 cnt = 0
 
 with tf.Session() as sess:
