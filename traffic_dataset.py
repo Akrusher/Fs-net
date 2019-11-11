@@ -1,3 +1,4 @@
+import random
 class dataset:
 	class train:
 		def __init__(self):
@@ -18,7 +19,7 @@ class dataset:
 			if ptr + batch_size >= self.num_examples:
 				self.set_batch_ptr(0)
 				ptr = self.batch_ptr * batch_size
-			label_lines = self.label_file(ptr:ptr+batch_size)
+			label_lines = self.label_file[ptr:ptr+batch_size]
 			idx = 0
 			for line in label_lines:
 				content = line.strip().split(',')
@@ -52,7 +53,7 @@ class dataset:
 			if ptr + batch_size >= self.num_examples:
 				self.set_batch_ptr(0)
 				ptr = self.batch_ptr * batch_size
-			label_lines = self.label_file(ptr:ptr+batch_size)
+			label_lines = self.label_file[ptr:ptr+batch_size]
 			idx = 0
 			for line in label_lines:
 				content = line.strip().split(',')
@@ -67,4 +68,3 @@ class dataset:
 			self.batch_ptr = batch_ptr
 
 
-			

@@ -15,14 +15,14 @@ class Fs_net():
 		self.alpha = 1	
 		self.vocab_size = 12
 
-	def bi_lstm(self):
+	def bi_lstm(self,x):
 	    # 顺时间循环层的记忆细胞，堆叠了两层
-	    lstm_fw1 = tf.nn.rnn_cell.LSTMCell(num_units=n_neurons)
-	    lstm_fw2 = tf.nn.rnn_cell.LSTMCell(num_units=n_neurons)
+	    lstm_fw1 = tf.nn.rnn_cell.LSTMCell(num_units=self.n_neurons)
+	    lstm_fw2 = tf.nn.rnn_cell.LSTMCell(num_units=self.n_neurons)
 	    lstm_forward = tf.nn.rnn_cell.MultiRNNCell(cells=[lstm_fw1,lstm_fw2])
 	    # 拟时间循环层的记忆细胞，堆叠了两层
-	    lstm_bc1 = tf.nn.rnn_cell.LSTMCell(num_units=n_neurons)
-	    lstm_bc2 = tf.nn.rnn_cell.LSTMCell(num_units=n_neurons)
+	    lstm_bc1 = tf.nn.rnn_cell.LSTMCell(num_units=self.n_neurons)
+	    lstm_bc2 = tf.nn.rnn_cell.LSTMCell(num_units=self.n_neurons)
 	    lstm_backward = tf.nn.rnn_cell.MultiRNNCell(cells=[lstm_bc1,lstm_bc2])
 	    # 计算输出和隐状态
 	    outputs,states=tf.nn.bidirectional_dynamic_rnn(cell_fw=lstm_forward, cell_bw=lstm_backward,inputs=self.X,dtype=tf.float32)
@@ -33,19 +33,19 @@ class Fs_net():
 	    return state_forward+state_backward
 
 	def bi_gru(self,x):
-	    gru_forward = tf.nn.rnn_cell.GRUCell(num_units=n_neurons)
-	    gru_backward = tf.nn.rnn_cell.GRUCell(num_units=n_neurons)
-	    outputs,states=tf.nn.bidirectional_dynamic_rnn(cell_fw=gru_forward, cell_bw=gru_backward,inputs=x,dtype=tf.float32)
-	    return states
+		fw_cell_list=[tf.nn.rnn_cell.GRUCell(self.n_neurons) for i in range(2)]
+		bw_cell_list=[tf.nn.rnn_cell.GRUCell(self.n_neurons) for i in range(2)]
+		outputs,states,_ = tf.contrib.rnn.stack_bidirectional_dynamic_rnn(fw_cell_list,bw_cell_list,x,dtype=tf.float32)
+		return states
 
 	def bi_gru_2(self,x):
 	    # 顺时间循环层的记忆细胞，堆叠了两层
-	    gru_fw1 = tf.nn.rnn_cell.GRUCell(num_units=n_neurons)
-	    gru_fw2 = tf.nn.rnn_cell.GRUCell(num_units=n_neurons)
+	    gru_fw1 = tf.nn.rnn_cell.GRUCell(num_units=self.n_neurons)
+	    gru_fw2 = tf.nn.rnn_cell.GRUCell(num_units=self.n_neurons)
 	    gru_forward = tf.nn.rnn_cell.MultiRNNCell(cells=[gru_fw1,gru_fw2])
 	    # 拟时间循环层的记忆细胞，堆叠了两层
-	    gru_bc1 = tf.nn.rnn_cell.GRUCell(num_units=n_neurons)
-	    gru_bc2 = tf.nn.rnn_cell.GRUCell(num_units=n_neurons)
+	    gru_bc1 = tf.nn.rnn_cell.GRUCell(num_units=self.n_neurons)
+	    gru_bc2 = tf.nn.rnn_cell.GRUCell(num_units=self.n_neurons)
 	    gru_backward = tf.nn.rnn_cell.MultiRNNCell(cells=[gru_bc1,gru_bc2])
 	    # 计算输出和隐状态
 	    outputs,states=tf.nn.bidirectional_dynamic_rnn(cell_fw=gru_forward, cell_bw=gru_backward,inputs=x,dtype=tf.float32)
@@ -58,9 +58,18 @@ class Fs_net():
 
 	def tinny_fs_net(self):
 		#add embedding 
+		print(self.X)
 		encoder_output = self.bi_gru(self.X)
-		encoder_feats = tf.concate([encoder_output[0][-1], encoder_output[1][-1]],axis=-1)
-		decoder_output = self.bi_gru(encoder_feats)
+		print(encoder_output)
+		encoder_feats = tf.concat([encoder_output[0], encoder_output[1]],axis=-1)
+		print("encoder_feats")
+		print(encoder_feats)
+		encoder_feats = tf.expand_dims(encoder_feats,axis=1)
+		print(encoder_feats)
+		decoder_input = tf.tile(encoder_feats,[1,self.n_steps,1])
+		print("decoder_input")
+		print(decoder_input)
+		decoder_output = self.bi_gru(decoder_input)
 		decoder_feats = tf.concate([decoder_output[0][-1], decoder_output[1][-1]],axis=-1)
 		element_wise_product = encoder_feats * decoder_feats
 		element_wise_absolute = tf.abs(encoder_feats,decoder_feats)
@@ -76,7 +85,7 @@ class Fs_net():
 		encoder_output = self.bi_gru(x_embedding)
 		encoder_feats = tf.concate([encoder_output[0][-1], encoder_output[1][-1]],axis=-1)
 		decoder_output = self.bi_gru(encoder_feats)
-		decoder_feats = tf.concate([decoder_output[0][-1], decoder_output[1][-1]],axis=-1)
+		decoder_feats = tf.concat([decoder_output[0][-1], decoder_output[1][-1]],axis=-1)
 		element_wise_product = encoder_feats * decoder_feats
 		element_wise_absolute = tf.abs(encoder_feats,decoder_feats)
 		cls_feats = tf.concat([encoder_feats, decoder_feats, element_wise_product, element_wise_absolute],axis = -1)
