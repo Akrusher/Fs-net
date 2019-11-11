@@ -1,4 +1,5 @@
 import random
+import numpy as np
 class dataset:
 	class train:
 		def __init__(self):
@@ -23,7 +24,7 @@ class dataset:
 			idx = 0
 			for line in label_lines:
 				content = line.strip().split(',')
-				y_batch[idx] = label2idx[content[len(content) - 1]]
+				y_batch[idx] = self.label2idx[content[len(content) - 1]]
 				for i in range(len(content) - 1):
 					x_batch[idx][i][0] = int(content[i])
 				idx += 1

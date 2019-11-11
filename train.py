@@ -41,7 +41,8 @@ with tf.Session() as sess:
 		for batch in range(batch_num):
 			X_batch, y_batch = train_data.next_batch(batch_size)
 			sess.run([train_op,loss],feed_dict={X:X_batch, Y:y_batch})
-			train_writer.add_sumary(summary,cnt)
+			summary_ = sess.run(summary)
+			train_writer.add_summary(summary_,cnt)
 			cnt += 1
 		if epoch % 5 == 0:
 			saver.save(sess,model_dir+"model_{}.ckpt".format(epoch))
