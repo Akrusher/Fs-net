@@ -46,16 +46,16 @@ with tf.Session() as sess:
 			_,_,summary_ = sess.run([train_op,loss,summary],feed_dict={X:X_batch, Y:y_batch})
 			train_writer.add_summary(summary_,cnt)
 			cnt += 1
-		if cnt % training_steps_per_epoch == 0:
-			steps_per_epoch = test_data.num_examples // batch_size
-			correct_cnt = 0
-			num_test_examples = steps_per_epoch * batch_size
-			for test_steps in range(steps_per_epoch):
-				X_test, y_test = test_data.next_batch(batch_size)
-				logits_ = sess.run([logits],feed_dict={X:X_test, Y:y_test})
-				prediction = np.argmax(logits_,1)
-				correct_cnt += np.sum(prediction == y_test)
-			acc = correct_cnt / num_test_examples
-			print("step: {} accuracy: {}".format(cnt, acc))
+			if cnt % training_steps_per_epoch == 0:
+				steps_per_epoch = test_data.num_examples // batch_size
+				correct_cnt = 0
+				num_test_examples = steps_per_epoch * batch_size
+				for test_steps in range(steps_per_epoch):
+					X_test, y_test = test_data.next_batch(batch_size)
+					logits_ = sess.run([logits],feed_dict={X:X_test, Y:y_test})
+					prediction = np.argmax(logits_,1)
+					correct_cnt += np.sum(prediction == y_test)
+				acc = correct_cnt / num_test_examples
+				print("step: {} accuracy: {}".format(cnt, acc))
 		if epoch % 5 == 0:
 			saver.save(sess,model_dir+"model_{}.ckpt".format(epoch))

@@ -1,3 +1,4 @@
+# coding = utf8
 import tensorflow as tf
 class Fs_net():
 	def __init__(self, x, y):
