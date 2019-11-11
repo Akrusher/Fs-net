@@ -6,7 +6,7 @@ n_steps = 22
 n_inputs = 1
 batch_size = 16 
 X = tf.placeholder(tf.float32, [batch_size, n_steps, n_inputs])
-Y = tf.placeholder(tf.float32, [batch_size])	
+Y = tf.placeholder(tf.int32, [batch_size])	
 
 train_data = dataset.train()
 #test_data = dataset.test()
@@ -29,7 +29,7 @@ saver = tf.train.Saver(max_to_keep=5)
 
 n_epoch = 50
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-batch_num = train_data.num_expamples // batch_size
+batch_num = train_data.num_examples // batch_size
 model_dir = "./summary"
 cnt = 0
 
