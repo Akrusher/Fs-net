@@ -61,18 +61,17 @@ class Fs_net():
 
 	def tinny_fs_net(self):
 		#add embedding 
-		with tf.variable_scope(name_or_scope=name,reuse= False):
-			encoder_output = self.bi_gru(self.X,"stack_encode_bi_gru")
-			encoder_feats = tf.concat([encoder_output[0], encoder_output[1]],axis=-1)
-			encoder_expand_feats = tf.expand_dims(encoder_feats,axis=1)
-			decoder_input = tf.tile(encoder_expand_feats,[1,self.n_steps,1])
-			decoder_output = self.bi_gru(decoder_input,"stack_decode_bi_gru")
-			decoder_feats = tf.concat([decoder_output[-1], decoder_output[-1]],axis=-1)
-			element_wise_product = encoder_feats * decoder_feats
-			element_wise_absolute = tf.abs(encoder_feats-decoder_feats)
-			cls_feats = tf.concat([encoder_feats, decoder_feats, element_wise_product, element_wise_absolute],axis = -1)
-			cls_dense_1 = tf.layers.dense(inputs=cls_feats,units= self.n_neurons,activation=tf.nn.selu,kernel_regularizer=tf.contrib.layers.l2_regularizer(0.003))
-			cls_dense_2 = tf.layers.dense(inputs=cls_dense_1,units=self.n_outputs,activation=tf.nn.relu,kernel_regularizer=tf.contrib.layers.l2_regularizer(0.003),name="softmax") 
+		encoder_output = self.bi_gru(self.X,"stack_encode_bi_gru")
+		encoder_feats = tf.concat([encoder_output[0], encoder_output[1]],axis=-1)
+		encoder_expand_feats = tf.expand_dims(encoder_feats,axis=1)
+		decoder_input = tf.tile(encoder_expand_feats,[1,self.n_steps,1])
+		decoder_output = self.bi_gru(decoder_input,"stack_decode_bi_gru")
+		decoder_feats = tf.concat([decoder_output[-1], decoder_output[-1]],axis=-1)
+		element_wise_product = encoder_feats * decoder_feats
+		element_wise_absolute = tf.abs(encoder_feats-decoder_feats)
+		cls_feats = tf.concat([encoder_feats, decoder_feats, element_wise_product, element_wise_absolute],axis = -1)
+		cls_dense_1 = tf.layers.dense(inputs=cls_feats,units= self.n_neurons,activation=tf.nn.selu,kernel_regularizer=tf.contrib.layers.l2_regularizer(0.003))
+		cls_dense_2 = tf.layers.dense(inputs=cls_dense_1,units=self.n_outputs,activation=tf.nn.relu,kernel_regularizer=tf.contrib.layers.l2_regularizer(0.003),name="softmax") 
 		return cls_dense_2, decoder_output
 
 	def fs_net(self):
