@@ -7,7 +7,7 @@ n_steps = 22
 n_inputs = 1
 batch_size = 16 
 X = tf.placeholder(tf.float32, [batch_size, n_steps, n_inputs])
-Y = tf.placeholder(tf.int32, [batch_size])	
+Y = tf.placeholder(tf.int32, [batch_size])    
 
 train_data = dataset.train()
 test_data = dataset.test()
@@ -21,8 +21,8 @@ optimizer  = tf.train.AdamOptimizer(learning_rate=lr)
 train_op = optimizer.minimize(loss)
 
 
-# correct =  tf.nn.in_top_k(logits,Y,1)                        
-# accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
+correct =  tf.nn.in_top_k(logits,Y,1)                        
+accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
 tf.summary.scalar("loss",loss)                                                        
 #tf.summary.scalar("accuracy",accuracy)
 summary = tf.summary.merge_all()
@@ -37,25 +37,26 @@ model_dir = "./summary/"
 cnt = 0
 
 with tf.Session() as sess:
-	sess.run(init_op)
-	train_writer = tf.summary.FileWriter(model_dir,sess.graph)
+    sess.run(init_op)
+    train_writer = tf.summary.FileWriter(model_dir,sess.graph)
 
-	for epoch in range(n_epoch):
-		for batch in range(batch_num):
-			X_batch, y_batch = train_data.next_batch(batch_size)
-			_,_,summary_ = sess.run([train_op,loss,summary],feed_dict={X:X_batch, Y:y_batch})
-			train_writer.add_summary(summary_,cnt)
-			cnt += 1
-			if cnt % training_steps_per_epoch == 0:
-				steps_per_epoch = test_data.num_examples // batch_size
-				correct_cnt = 0
-				num_test_examples = steps_per_epoch * batch_size
-				for test_steps in range(steps_per_epoch):
-					X_test, y_test = test_data.next_batch(batch_size)
-					logits_ = sess.run([logits],feed_dict={X:X_test, Y:y_test})
-					prediction = np.argmax(logits_,1)
-					correct_cnt += np.sum(prediction == y_test)
-				acc = correct_cnt / num_test_examples
-				print("step: {} accuracy: {}".format(cnt, acc))
-		if epoch % 5 == 0:
-			saver.save(sess,model_dir+"model_{}.ckpt".format(epoch))
+    for epoch in range(n_epoch):
+        for batch in range(batch_num):
+            X_batch, y_batch = train_data.next_batch(batch_size)
+            _,_,summary_,train_acc = sess.run([train_op,loss,summary,accuracy],feed_dict={X:X_batch, Y:y_batch})
+            train_writer.add_summary(summary_,cnt)
+            cnt += 1
+            if cnt % training_steps_per_epoch == 0:
+                print("step: {} train_accuracy: {}".format(cnt, train_acc))
+        steps_per_epoch = test_data.num_examples // batch_size
+        correct_cnt = 0
+        num_test_examples = steps_per_epoch * batch_size
+        for test_steps in range(steps_per_epoch):
+            X_test, y_test = test_data.next_batch(batch_size)
+            logits_ = sess.run(logits,feed_dict={X:X_test, Y:y_test})
+            prediction = np.argmax(logits_,1)
+            correct_cnt += np.sum(prediction == y_test)
+        acc = correct_cnt / num_test_examples
+        print("step: {} test_accuracy: {}".format(cnt, acc))
+        if epoch % 2 == 0:
+            saver.save(sess,model_dir+"model_{}.ckpt".format(epoch))
