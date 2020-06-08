@@ -4,7 +4,7 @@ class Fs_net():
 	def __init__(self, x, y):
 		self.embedding_dim = 128
 		self.hidden_dim = 128
-		self.vocab_size = 50
+		self.vocab_size = 128
 		self.n_neurons = 128
 		self.encoder_n_neurons = 128
 		self.decoder_n_neurons = self.vocab_size
