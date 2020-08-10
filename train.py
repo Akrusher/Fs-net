@@ -1,11 +1,12 @@
 import tensorflow as tf
 from model import Fs_net
-from traffic_dataset import dataset
+#from traffic_dataset import dataset
+from dataset_pcap_length import dataset
 import numpy as np
 
-n_steps = 22
+n_steps = 256
 n_inputs = 1
-batch_size = 16 
+batch_size = 8 
 X = tf.placeholder(tf.float32, [batch_size, n_steps, n_inputs])
 Y = tf.placeholder(tf.int32, [batch_size])    
 
@@ -30,9 +31,9 @@ summary = tf.summary.merge_all()
 init_op = tf.global_variables_initializer()
 saver = tf.train.Saver(max_to_keep=5)
 
-n_epoch = 150
+n_epoch = 1500
 batch_num = train_data.num_examples // batch_size
-training_steps_per_epoch = 100
+training_steps_per_epoch = 3
 model_dir = "./summary/"
 cnt = 0
 
@@ -56,7 +57,7 @@ with tf.Session() as sess:
             logits_ = sess.run(logits,feed_dict={X:X_test, Y:y_test})
             prediction = np.argmax(logits_,1)
             correct_cnt += np.sum(prediction == y_test)
-        acc = correct_cnt / num_test_examples
+        acc = correct_cnt * 1.0 / num_test_examples
         print("step: {} test_accuracy: {}".format(cnt, acc))
         if epoch % 2 == 0:
             saver.save(sess,model_dir+"model_{}.ckpt".format(epoch))

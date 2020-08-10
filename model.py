@@ -9,9 +9,9 @@ class Fs_net():
 		self.encoder_n_neurons = 128
 		self.decoder_n_neurons = self.vocab_size
 		self.n_layers = 2
-		self.n_steps = 22
+		self.n_steps = 256
 		self.n_inputs = 128
-		self.n_outputs = 11
+		self.n_outputs = 4
 		# self.X = tf.placeholder(tf.float32, [None, self.n_steps, self.n_inputs])
 		# self.Y = tf.placeholder(tf.float32, [None,1])	
 		self.X = x
